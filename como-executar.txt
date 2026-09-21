@@ -1,0 +1,17 @@
+# ULTRON — como executar (Windows)
+
+MODO MAIS FÁCIL (recomendado):
+1) Clique duplo em ABRIR-ULTRON.bat
+2) O navegador abre sozinho em http://localhost:8080
+
+MODO MANUAL:
+1) Abra o terminal nesta pasta
+2) Execute:  node server.js
+3) Abra no navegador:  http://localhost:8080
+
+SEM SERVIDOR (modo simples, sem voz):
+- Clique duplo direto em index.html
+- Funciona texto, foto e vídeo. O microfone 🎙 só funciona via http://localhost:8080 por regra do navegador.
+
+Se a porta 8080 estiver ocupada, edite server.js e troque PORT para 8081.
+A IA é 100% local (ultron.js), sem API key e sem custo.

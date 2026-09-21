@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULTRON — Agente de Respostas IA</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <div class="brand">
+    <div class="avatar-wrap" id="ultronEye">
+      <img id="ultronAvatar" alt="Ultron" style="display:none">
+      <div class="eye" id="eyeFallback" style="display:none"><div class="pupil"></div></div>
+    </div>
+    <div>
+      <h1>ULTRON</h1>
+      <p id="status"><span class="dot"></span> online</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="btnSettings" class="icon-btn" title="Configurar IA avançada (Gemini grátis)">⚙</button>
+    <button id="btnVoiceReply" class="icon-btn active" title="Ativar/desativar voz de resposta do Ultron">🔊</button>
+    <button id="btnClear" class="danger-btn" title="Apagar toda a conversa">🗑 Apagar conversa</button>
+  </div>
+</header>
+
+<main id="chat" class="chat"></main>
+
+<div id="previewBar" class="preview-bar hidden">
+  <div id="previewContent"></div>
+  <button id="previewCancel" class="icon-btn" title="Cancelar anexo">✖</button>
+</div>
+
+<div id="recBar" class="rec-bar hidden">
+  <span class="rec-pulse"></span>
+  <span id="recTime">00:00</span>
+  <span>gravando voz... clique em parar para enviar</span>
+</div>
+
+<footer class="composer">
+  <input type="file" id="filePhoto" accept="image/*" hidden>
+  <input type="file" id="fileVideo" accept="video/*" hidden>
+  <button id="btnPhoto" class="icon-btn" title="Enviar foto">📷</button>
+  <button id="btnVideo" class="icon-btn" title="Enviar vídeo">🎬</button>
+  <button id="btnMic" class="icon-btn" title="Gravar mensagem de voz">🎙</button>
+  <input id="input" type="text" placeholder="Fale com o ULTRON..." autocomplete="off" maxlength="2000">
+  <button id="btnSend" class="send-btn" title="Enviar">➤</button>
+</footer>
+
+<div id="confirmModal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Apagar conversa?</h2>
+    <p>Isso vai remover todas as mensagens, fotos, vídeos e áudios deste chat no seu navegador.</p>
+    <div class="modal-actions">
+      <button id="confirmCancel" class="icon-btn">Cancelar</button>
+      <button id="confirmYes" class="danger-btn">Sim, apagar tudo</button>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-box">
+    <h2>⚙ IA avançada (Gemini grátis)</h2>
+    <p>Para o Ultron responder com IA de verdade e enxergar fotos, vídeos e áudios:<br>1️⃣ Acesse <b>aistudio.google.com</b> e entre com sua conta Google<br>2️⃣ Clique em <b>Get API Key</b> e copie a chave<br>3️⃣ Cole abaixo e salve.</p>
+    <label class="fld-label" for="setKey">API key do Google AI Studio</label>
+    <input id="setKey" type="password" placeholder="AIza..." autocomplete="off">
+    <label class="fld-label" for="setModel">Modelo</label>
+    <input id="setModel" type="text" value="gemini-2.5-flash" autocomplete="off">
+    <label class="check-row"><input id="setOn" type="checkbox"> Usar IA avançada (responde e enxerga fotos, vídeos e áudios)</label>
+    <p id="setStatus" class="set-status"></p>
+    <div class="modal-actions">
+      <button id="setCancel" class="icon-btn">Fechar</button>
+      <button id="setSave" class="danger-btn">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="ultron.js"></script>
+</body>
+</html>
