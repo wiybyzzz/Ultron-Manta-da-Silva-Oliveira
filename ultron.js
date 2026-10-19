@@ -399,7 +399,12 @@ function cloudOrLocal(message, media, kind) {
     }
     cloudReply(message, media);
   } else {
-    ultronSay(brain(message, kind ? { media: { type: kind } } : {}));
+    let aviso = '';
+    if (!cloud.warned) {
+      cloud.warned = true;
+      aviso = '<br><br>💡 <b>Modo local ativo</b> (respostas básicas). Para eu responder <b>tudo</b> e enxergar <b>fotos, vídeos e áudios</b>: clique na engrenagem <b>⚙</b> e ative o Google Gemini grátis (chave do aistudio.google.com).<br><i>Obs: a chave do computador não transfere — configure uma vez em cada site/aparelho.</i>';
+    }
+    ultronSay(brain(message, kind ? { media: { type: kind } } : {}) + aviso);
   }
 }
 
