@@ -123,8 +123,8 @@ function chooseNaturalVoice() {
     if (!vs.length) return null;
     const pt = vs.filter(v => (v.lang || '').toLowerCase().startsWith('pt'));
     const base = pt.length ? pt : vs;
-    const quality = /natural|neural|google|microsoft online/i;
-    return base.find(v => quality.test(v.name + ' ' + (v.voiceURI || ''))) || base[0];
+    const maleHint = /antonio|thiago|daniel|ricardo|paulo|jorge|felipe|bruno|male|masculino/i;
+    return base.find(v => maleHint.test(v.name + ' ' + (v.voiceURI || ''))) || base[0];
   } catch { return null; }
 }
 if ('speechSynthesis' in window) {
@@ -214,7 +214,7 @@ function speakNext() {
     }
     speaking = true;
     const u = new SpeechSynthesisUtterance(next);
-    u.lang = 'pt-BR'; u.rate = 0.95; u.pitch = 0.1; // grave e natural, estilo Ultron
+    u.lang = 'pt-BR'; u.rate = 0.88; u.pitch = 0.02; // voz grave, lenta e imponente (estilo Ultron)
     if (ultronVoice) u.voice = ultronVoice;
     u.onend = speakNext;
     u.onerror = speakNext;

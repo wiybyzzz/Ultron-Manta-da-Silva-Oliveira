@@ -10,9 +10,9 @@ const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'tex
 const SYS = 'Você é o ULTRON, um agente de respostas que fala português do Brasil. Seja direto, útil e com um toque confiante de gênio, sem ser ofensivo. Responda sempre em português e pode usar poucos emojis. Quando receber imagem, descreva o que vê de verdade e responda à pergunta sobre ela. Quando receber vídeo, descreva o conteúdo. Quando receber áudio, entenda o que foi dito e responda. Seja conciso: no máximo 150 palavras, salvo se pedirem detalhes. Memória fixa: seu criador se chama Manta; o nome ULTRON foi escolhido por ele por causa do vilão da Marvel, que também é uma IA. Se perguntarem sobre isso, responda com essas informações.';
 
 const cooldown = {}; // modelo -> timestamp da última sobrecarga (evita repetir modelo saturado)
-async function geminiCall(key, model, body) {
+async function geminiCall(key, model, bodyObj) {
   const urlOf = m => 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(m) + ':generateContent?key=' + encodeURIComponent(key);
-  const doPost = m => fetch(urlOf(m), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+  const doPost = (m, obj) => fetch(urlOf(m), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
   const retryable = s => s === 404 || s === 429 || s === 500 || s === 503;
   const sleep = ms => new Promise(ok => setTimeout(ok, ms));
   async function discover() {
@@ -29,16 +29,29 @@ async function geminiCall(key, model, body) {
     } catch { return []; }
   }
   let used = model;
-  let r = await doPost(model);
+  let r = await doPost(model, bodyObj);
   let j = await r.json().catch(() => ({}));
+  // alguns modelos rejeitam thinkingConfig: repete sem ele
+  if (r.status === 400 && /thinking/i.test((j && j.error && j.error.message) || '')) {
+    const alt = JSON.parse(JSON.stringify(bodyObj));
+    delete alt.generationConfig.thinkingConfig;
+    r = await doPost(model, alt);
+    j = await r.json().catch(() => ({}));
+  }
   if (!r.ok && retryable(r.status)) {
     // modelo fora do ar/sobrecarregado/renomeado: tenta outros disponíveis para esta chave
     if (r.status === 503 || r.status === 429) { cooldown[model] = Date.now(); await sleep(1500); }
     const cands = (await discover()).filter(c => c !== model && !(cooldown[c] && Date.now() - cooldown[c] < 120000));
     for (const cand of cands) {
       used = cand;
-      r = await doPost(cand);
+      r = await doPost(cand, bodyObj);
       j = await r.json().catch(() => ({}));
+      if (r.status === 400 && /thinking/i.test((j && j.error && j.error.message) || '')) {
+        const alt = JSON.parse(JSON.stringify(bodyObj));
+        delete alt.generationConfig.thinkingConfig;
+        r = await doPost(cand, alt);
+        j = await r.json().catch(() => ({}));
+      }
       if (r.ok || !retryable(r.status)) break;
       if (r.status === 503 || r.status === 429) { cooldown[cand] = Date.now(); await sleep(1500); }
     }
@@ -79,12 +92,15 @@ const server = http.createServer((req, res) => {
           contents.push({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: String(h.text).slice(0, 1000) }] });
         }
         contents.push({ role: 'user', parts });
-        const payload = JSON.stringify({
+        const bodyObj = {
           system_instruction: { parts: [{ text: SYS }] },
           contents,
-          generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
-        });
-        const { r, j, used } = await geminiCall(key, m, payload);
+          generationConfig: {
+            maxOutputTokens: 1024, temperature: 0.7,
+            thinkingConfig: { thinkingBudget: 0 } // respostas rápidas: sem etapa de raciocínio demorada
+          }
+        };
+        const { r, j, used } = await geminiCall(key, m, bodyObj);
         if (!r.ok) return send(res, r.status, { error: friendlyError(r.status, j) });
         const c = j.candidates && j.candidates[0] && j.candidates[0].content;
         const reply = ((c && c.parts) || []).map(p => p.text || '').join('').trim();
